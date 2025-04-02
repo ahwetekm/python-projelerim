@@ -3,6 +3,13 @@ const fotografSec = document.getElementById('fotograf-sec');
 const notKaydet = document.getElementById('not-kaydet');
 const qrKoduAlani = document.getElementById('qr-kodu');
 
+if (typeof QRCode === 'undefined') {
+    console.error('QRCode kütüphanesi yüklenmedi!');
+} else {
+    console.log('QRCode kütüphanesi başarıyla yüklendi.');
+    // QR kod oluşturma kodunuzu buraya ekleyin
+}
+
 notKaydet.addEventListener('click', () => {
     const not = notMetni.value;
     const fotograf = fotografSec.files[0];
