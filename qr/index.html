@@ -67,6 +67,7 @@
             font-size: 16px;
             line-height: 1.5;
             margin-bottom: 15px;
+            white-space: pre-wrap;
         }
         
         .note-image {
@@ -203,6 +204,14 @@
             padding: 20px;
             display: none;
         }
+        
+        .info-box {
+            background-color: #e2f0fd;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -237,6 +246,11 @@
                 <div class="note-url" id="noteUrl"></div>
                 <button onclick="copyNoteUrl()" class="copy-button">Bağlantıyı Kopyala</button>
                 <button onclick="resetForm()" id="clearButton">Yeni Not Oluştur</button>
+                
+                <div class="info-box">
+                    <p><strong>Önemli:</strong> Bu bağlantı veya QR kod, notunuzun tüm içeriğini taşır. 
+                    İstediğiniz kişi ile paylaşabilirsiniz. Herhangi bir sunucu veya internet bağlantısı gerekmez.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -264,6 +278,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
     <script>
         // Temel değişkenler
         const noteForm = document.getElementById('noteForm');
@@ -298,25 +313,6 @@
             document.querySelector(`.tab-button[onclick="switchTab('${tabId}')"]`).classList.add('active');
         }
         
-        // Not deposu (localStorage kullanarak)
-        const noteStorage = {
-            saveNote: function(note) {
-                const notes = this.getAllNotes();
-                notes[note.id] = note;
-                localStorage.setItem('shared_notes', JSON.stringify(notes));
-                return note.id;
-            },
-            
-            getNote: function(id) {
-                const notes = this.getAllNotes();
-                return notes[id] || null;
-            },
-            
-            getAllNotes: function() {
-                return JSON.parse(localStorage.getItem('shared_notes') || '{}');
-            }
-        };
-        
         // Not oluşturma
         noteForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -345,23 +341,19 @@
         });
         
         function createNote(title, content, imageData) {
-            // Benzersiz ID oluştur
-            const noteId = generateUniqueId();
-            
             // Not nesnesini oluştur
             const note = {
-                id: noteId,
                 title: title,
                 content: content,
                 image: imageData,
                 createdAt: new Date().toISOString()
             };
             
-            // Notu kaydet
-            noteStorage.saveNote(note);
+            // Not verisini sıkıştır ve URL-güvenli hale getir
+            const compressedData = LZString.compressToEncodedURIComponent(JSON.stringify(note));
             
-            // Not URL'si oluştur
-            const noteUrl = window.location.href.split('?')[0] + '?note=' + noteId;
+            // Not URL'si oluştur (veriyi URL'de taşıyarak)
+            const noteUrl = window.location.href.split('?')[0] + '?data=' + compressedData;
             
             // QR kod oluştur
             qrCodeImage.innerHTML = '';
@@ -382,13 +374,17 @@
         // URL parametrelerinden not yükleme
         function loadNoteFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
-            const noteId = urlParams.get('note');
+            const compressedData = urlParams.get('data');
             
-            if (noteId) {
-                const note = noteStorage.getNote(noteId);
-                if (note) {
-                    displayNote(note);
+            if (compressedData) {
+                try {
+                    // Sıkıştırılmış veriyi çöz
+                    const noteData = JSON.parse(LZString.decompressFromEncodedURIComponent(compressedData));
+                    displayNote(noteData);
                     switchTab('scanTab');
+                } catch (e) {
+                    console.error("Not verisi çözülemedi:", e);
+                    // Hata mesajı göstermeye gerek yok, kullanıcı zaten ana ekranı görecek
                 }
             }
         }
@@ -477,20 +473,22 @@
         }
         
         function processQRData(qrData) {
-            // URL'den note parametresini çıkar
+            // URL'den data parametresini çıkar
             try {
                 const url = new URL(qrData);
                 const params = new URLSearchParams(url.search);
-                const noteId = params.get('note');
+                const compressedData = params.get('data');
                 
-                if (noteId) {
-                    const note = noteStorage.getNote(noteId);
-                    if (note) {
+                if (compressedData) {
+                    try {
+                        // Sıkıştırılmış veriyi çöz
+                        const noteData = JSON.parse(LZString.decompressFromEncodedURIComponent(compressedData));
                         stopQRScanner();
-                        displayNote(note);
+                        displayNote(noteData);
                         showScanMessage("Not başarıyla yüklendi!", true);
-                    } else {
-                        showScanMessage("Not bulunamadı. QR kod geçersiz olabilir.", false);
+                    } catch (e) {
+                        console.error("Not verisi çözülemedi:", e);
+                        showScanMessage("Not verisi çözülemedi. QR kod geçersiz olabilir.", false);
                         // Taramaya devam et
                         requestAnimationFrame(scanQRCode);
                     }
@@ -513,10 +511,6 @@
         }
         
         // Yardımcı fonksiyonlar
-        function generateUniqueId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-        }
-        
         function copyNoteUrl() {
             const url = noteUrlElement.textContent;
             navigator.clipboard.writeText(url).then(function() {
@@ -533,7 +527,7 @@
             qrCodeContainer.style.display = 'none';
         }
         
-        // Sayfa yüklenince not ID'si varsa yükle
+        // Sayfa yüklenince URL'den not verisi varsa yükle
         window.addEventListener('DOMContentLoaded', loadNoteFromUrl);
     </script>
 </body>
