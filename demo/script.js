@@ -15,7 +15,12 @@ notKaydet.addEventListener('click', () => {
         const veriJson = JSON.stringify(veri);
 
         // QR kod oluştur
-        new QRCode(qrKoduAlani, veriJson);
+        qrKoduAlani.innerHTML = ''; // Önceki QR kodunu temizle
+        new QRCode(qrKoduAlani, {
+            text: veriJson,
+            width: 256,
+            height: 256,
+        });
     };
     if (fotograf) {
         okuyucu.readAsDataURL(fotograf);
@@ -24,6 +29,11 @@ notKaydet.addEventListener('click', () => {
         const veriJson = JSON.stringify(veri);
 
         // QR kod oluştur
-        new QRCode(qrKoduAlani, veriJson);
+        qrKoduAlani.innerHTML = ''; // Önceki QR kodunu temizle
+        new QRCode(qrKoduAlani, {
+            text: veriJson,
+            width: 256,
+            height: 256,
+        });
     }
 });
