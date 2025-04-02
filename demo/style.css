@@ -1,0 +1,21 @@
+#not-alani {
+    width: 500px;
+    margin: 20px auto;
+}
+
+#not-metni {
+    width: 100%;
+    height: 150px;
+    padding: 10px;
+}
+
+#qr-kodu-alani {
+    width: 300px;
+    margin: 20px auto;
+}
+
+#qr-kodu {
+    width: 256px;
+    height: 256px;
+    margin: 0 auto;
+}
