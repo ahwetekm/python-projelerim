@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not Paylaşım Uygulaması</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        #noteForm {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        input, textarea, button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .note-display {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .note-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .note-content {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .note-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 4px;
+            margin-top: 15px;
+            display: block;
+        }
+        
+        #qrCodeContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px dashed #3498db;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        #qrCodeImage {
+            margin: 20px 0;
+        }
+        
+        .section-title {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 30px;
+            color: #2c3e50;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .tab-button {
+            padding: 10px 20px;
+            background-color: #ddd;
+            cursor: pointer;
+            border: none;
+            flex: 1;
+        }
+        
+        .tab-button.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        #scannerContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        #scanner {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+        
+        #scannerVideo {
+            width: 100%;
+            border: 2px solid #3498db;
+            border-radius: 4px;
+        }
+        
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .message-box {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .note-url {
+            word-break: break-all;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .share-button {
+            background-color: #25D366;
+            margin-top: 10px;
+        }
+        
+        #clearButton {
+            background-color: #6c757d;
+            margin-top: 10px;
+        }
+        
+        #loadingIndicator {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Not Paylaşım Uygulaması</h1>
+    
+    <div class="tab-buttons">
+        <button class="tab-button active" onclick="switchTab('createTab')">Not Oluştur</button>
+        <button class="tab-button" onclick="switchTab('scanTab')">QR Kod Tara</button>
+    </div>
+    
+    <div id="createTab" class="tab-content active">
+        <div class="container">
+            <h2 class="section-title">Yeni Not Oluştur</h2>
+            
+            <form id="noteForm">
+                <input type="text" id="noteTitle" placeholder="Not Başlığı" required>
+                <textarea id="noteContent" placeholder="Not İçeriği" rows="5" required></textarea>
+                <input type="file" id="noteImage" accept="image/*">
+                <button type="submit">Not Oluştur</button>
+            </form>
+            
+            <div id="loadingIndicator">
+                <div class="loader"></div>
+                <p>Not oluşturuluyor...</p>
+            </div>
+            
+            <div id="qrCodeContainer" style="display: none;">
+                <h3>Notunuz Başarıyla Oluşturuldu!</h3>
+                <p>Bu QR Kodu paylaşarak notunuza erişim sağlayabilirsiniz:</p>
+                <div id="qrCodeImage"></div>
+                <p>Not Bağlantısı:</p>
+                <div class="note-url" id="noteUrl"></div>
+                <button onclick="copyNoteUrl()" class="copy-button">Bağlantıyı Kopyala</button>
+                <button onclick="resetForm()" id="clearButton">Yeni Not Oluştur</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="scanTab" class="tab-content">
+        <div class="container">
+            <h2 class="section-title">QR Kod Tara</h2>
+            
+            <div id="scannerContainer">
+                <button id="startScanButton">Kamerayı Aç</button>
+                <div id="scanner">
+                    <video id="scannerVideo" hidden autoplay playsinline></video>
+                </div>
+                <div id="scanMessage" class="message-box" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <div class="container note-display" id="noteDisplay">
+            <h2 class="section-title">Not Detayları</h2>
+            <div class="note-title" id="displayTitle"></div>
+            <div class="note-content" id="displayContent"></div>
+            <img class="note-image" id="displayImage" style="display: none;">
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+    <script>
+        // Temel değişkenler
+        const noteForm = document.getElementById('noteForm');
+        const noteTitle = document.getElementById('noteTitle');
+        const noteContent = document.getElementById('noteContent');
+        const noteImage = document.getElementById('noteImage');
+        const qrCodeContainer = document.getElementById('qrCodeContainer');
+        const qrCodeImage = document.getElementById('qrCodeImage');
+        const noteUrlElement = document.getElementById('noteUrl');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        
+        // QR kod tarama değişkenleri
+        const startScanButton = document.getElementById('startScanButton');
+        const scannerVideo = document.getElementById('scannerVideo');
+        const scanMessage = document.getElementById('scanMessage');
+        const noteDisplay = document.getElementById('noteDisplay');
+        const displayTitle = document.getElementById('displayTitle');
+        const displayContent = document.getElementById('displayContent');
+        const displayImage = document.getElementById('displayImage');
+        
+        // Sekme değiştirme
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab-button[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        }
+        
+        // Not deposu (localStorage kullanarak)
+        const noteStorage = {
+            saveNote: function(note) {
+                const notes = this.getAllNotes();
+                notes[note.id] = note;
+                localStorage.setItem('shared_notes', JSON.stringify(notes));
+                return note.id;
+            },
+            
+            getNote: function(id) {
+                const notes = this.getAllNotes();
+                return notes[id] || null;
+            },
+            
+            getAllNotes: function() {
+                return JSON.parse(localStorage.getItem('shared_notes') || '{}');
+            }
+        };
+        
+        // Not oluşturma
+        noteForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = noteTitle.value.trim();
+            const content = noteContent.value.trim();
+            
+            if (!title || !content) {
+                alert('Lütfen başlık ve içerik alanlarını doldurunuz.');
+                return;
+            }
+            
+            loadingIndicator.style.display = 'block';
+            noteForm.style.display = 'none';
+            
+            // Resim varsa base64 formatına çevir
+            if (noteImage.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    createNote(title, content, event.target.result);
+                };
+                reader.readAsDataURL(noteImage.files[0]);
+            } else {
+                createNote(title, content, null);
+            }
+        });
+        
+        function createNote(title, content, imageData) {
+            // Benzersiz ID oluştur
+            const noteId = generateUniqueId();
+            
+            // Not nesnesini oluştur
+            const note = {
+                id: noteId,
+                title: title,
+                content: content,
+                image: imageData,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Notu kaydet
+            noteStorage.saveNote(note);
+            
+            // Not URL'si oluştur
+            const noteUrl = window.location.href.split('?')[0] + '?note=' + noteId;
+            
+            // QR kod oluştur
+            qrCodeImage.innerHTML = '';
+            new QRCode(qrCodeImage, {
+                text: noteUrl,
+                width: 200,
+                height: 200
+            });
+            
+            // URL'yi göster
+            noteUrlElement.textContent = noteUrl;
+            
+            // Yükleme göstergesini gizle, QR kodu göster
+            loadingIndicator.style.display = 'none';
+            qrCodeContainer.style.display = 'block';
+        }
+        
+        // URL parametrelerinden not yükleme
+        function loadNoteFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const noteId = urlParams.get('note');
+            
+            if (noteId) {
+                const note = noteStorage.getNote(noteId);
+                if (note) {
+                    displayNote(note);
+                    switchTab('scanTab');
+                }
+            }
+        }
+        
+        // Notu görüntüleme
+        function displayNote(note) {
+            displayTitle.textContent = note.title;
+            displayContent.textContent = note.content;
+            
+            if (note.image) {
+                displayImage.src = note.image;
+                displayImage.style.display = 'block';
+            } else {
+                displayImage.style.display = 'none';
+            }
+            
+            noteDisplay.style.display = 'block';
+        }
+        
+        // QR kod tarama
+        let videoStream = null;
+        
+        startScanButton.addEventListener('click', function() {
+            if (scannerVideo.hidden) {
+                startQRScanner();
+            } else {
+                stopQRScanner();
+            }
+        });
+        
+        function startQRScanner() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                    .then(function(stream) {
+                        videoStream = stream;
+                        scannerVideo.srcObject = stream;
+                        scannerVideo.hidden = false;
+                        startScanButton.textContent = 'Taramayı Durdur';
+                        scanMessage.style.display = 'none';
+                        
+                        // QR kod tarama döngüsünü başlat
+                        scanQRCode();
+                    })
+                    .catch(function(error) {
+                        console.error("Kamera erişimi hatası:", error);
+                        showScanMessage("Kamera erişilemedi. Lütfen kamera izinlerini kontrol ediniz.", false);
+                    });
+            } else {
+                showScanMessage("Bu tarayıcı kamera erişimini desteklemiyor.", false);
+            }
+        }
+        
+        function stopQRScanner() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                scannerVideo.srcObject = null;
+                scannerVideo.hidden = true;
+                startScanButton.textContent = 'Kamerayı Aç';
+            }
+        }
+        
+        function scanQRCode() {
+            if (scannerVideo.hidden) return;
+            
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            if (scannerVideo.videoWidth && scannerVideo.videoHeight) {
+                canvas.width = scannerVideo.videoWidth;
+                canvas.height = scannerVideo.videoHeight;
+                context.drawImage(scannerVideo, 0, 0, canvas.width, canvas.height);
+                
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                
+                if (code) {
+                    // QR kod içeriğini analiz et
+                    const qrData = code.data;
+                    processQRData(qrData);
+                    return;
+                }
+            }
+            
+            // Taramaya devam et
+            requestAnimationFrame(scanQRCode);
+        }
+        
+        function processQRData(qrData) {
+            // URL'den note parametresini çıkar
+            try {
+                const url = new URL(qrData);
+                const params = new URLSearchParams(url.search);
+                const noteId = params.get('note');
+                
+                if (noteId) {
+                    const note = noteStorage.getNote(noteId);
+                    if (note) {
+                        stopQRScanner();
+                        displayNote(note);
+                        showScanMessage("Not başarıyla yüklendi!", true);
+                    } else {
+                        showScanMessage("Not bulunamadı. QR kod geçersiz olabilir.", false);
+                        // Taramaya devam et
+                        requestAnimationFrame(scanQRCode);
+                    }
+                } else {
+                    showScanMessage("Geçerli bir not QR kodu değil.", false);
+                    // Taramaya devam et
+                    requestAnimationFrame(scanQRCode);
+                }
+            } catch (e) {
+                showScanMessage("Bu bir URL değil. Lütfen geçerli bir QR kod tarayınız.", false);
+                // Taramaya devam et
+                requestAnimationFrame(scanQRCode);
+            }
+        }
+        
+        function showScanMessage(message, isSuccess) {
+            scanMessage.textContent = message;
+            scanMessage.className = 'message-box ' + (isSuccess ? 'success' : 'error');
+            scanMessage.style.display = 'block';
+        }
+        
+        // Yardımcı fonksiyonlar
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        }
+        
+        function copyNoteUrl() {
+            const url = noteUrlElement.textContent;
+            navigator.clipboard.writeText(url).then(function() {
+                alert("Bağlantı panoya kopyalandı!");
+            }).catch(function(err) {
+                console.error('Kopyalama hatası:', err);
+                alert("Kopyalama başarısız. Lütfen URL'yi manuel olarak kopyalayın.");
+            });
+        }
+        
+        function resetForm() {
+            noteForm.reset();
+            noteForm.style.display = 'flex';
+            qrCodeContainer.style.display = 'none';
+        }
+        
+        // Sayfa yüklenince not ID'si varsa yükle
+        window.addEventListener('DOMContentLoaded', loadNoteFromUrl);
+    </script>
+</body>
+</html>
