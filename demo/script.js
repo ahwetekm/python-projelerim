@@ -36,3 +36,16 @@ function generateQRCode(data) {
         }
     );
 }
+
+const data = { text: noteText };
+
+if (imageFile) {
+    const reader = new FileReader();
+    reader.onload = () => {
+        data.image = reader.result; // Dosya içeriğini ekliyoruz
+        generateQRCode(data); // QR kod oluşturuyoruz
+    };
+    reader.readAsDataURL(imageFile);
+} else {
+    generateQRCode(data); // Resim yoksa yalnızca metni gönderiyoruz
+}
