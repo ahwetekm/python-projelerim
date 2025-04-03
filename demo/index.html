@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Kod Not Uygulaması</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Not Oluşturma Uygulaması</h1>
+        <form id="noteForm">
+            <textarea id="noteText" placeholder="Notunuzu buraya yazın..." required></textarea>
+            <input type="file" id="imageUpload" accept="image/*">
+            <button type="submit">Not Oluştur</button>
+        </form>
+        <div id="qrCodeContainer"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
