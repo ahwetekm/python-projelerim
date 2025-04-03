@@ -49,3 +49,15 @@ if (imageFile) {
 } else {
     generateQRCode(data); // Resim yoksa yalnızca metni gönderiyoruz
 }
+
+QRCode.toCanvas(
+    JSON.stringify(data), 
+    { width: 250 }, 
+    (err, canvas) => {
+        if (err) {
+            console.error("QR kod oluşturulurken hata:", err);
+            return;
+        }
+        qrCodeContainer.appendChild(canvas);
+    }
+);
