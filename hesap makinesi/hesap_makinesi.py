@@ -1,18 +1,20 @@
-islem = input("Hesaplamak istediğiniz işlemi girin (+, -, *, /): ")
-sayi1 = int(input("Birinci sayıyı giriniz: "))
-sayi2 = int(input("İkinci sayıyı giriniz: "))
-
+sayi1 = float(input("Birinci sayıyı giriniz: "))
+sayi2 = float(input("İkinci sayıyı giriniz: "))
+islem = input("Yapmak istediğiniz işlemi seçiniz  (+, -, /, *,): ")
 if islem == "+":
     sonuc = sayi1 + sayi2
-    print("Toplama işlemi başarılı. " + str(sonuc))
+    print("Toplama işlemini seçtiniz. Sonuç: " + str(sonuc))
 elif islem == "-":
     sonuc = sayi1 - sayi2
-    print("Çıkarma işlemi başarılı. " + str(sonuc))
-elif islem == "*":
-    sonuc = sayi1 * sayi2
-    print("Çarpma işlemi başarılı. " + str(sonuc))
+    print("Çıkartma işlemini seçtiniz. Sonuç: " + str(sonuc))
 elif islem == "/":
     sonuc = sayi1 / sayi2
-    print("Bölme işlemi başarılı. " + str(sonuc))
+    if syi2 == 0:
+        print("Hiçbir sayı sıfıra bölünmez.")
+    else:
+        print("Bölme işlemini seçtiniz. Sonuç: " + str(sonuc))
+elif islem == "*":
+    sonuc = sayi1 * sayi2
+    print("Çarpma işlemini seçtiniz. Sonuç: " + str(sonuc))
 else:
-    print("Geçersiz işlem girdiniz.")
+    print("Geçersiz işlem girdisi. Lütfen geçerli bir girdi giriniz.")
