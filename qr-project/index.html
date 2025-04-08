@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not Oluştur</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Not Oluştur</h1>
+        <form id="noteForm">
+            <label for="noteTitle">Başlık:</label>
+            <input type="text" id="noteTitle" required>
+
+            <label for="noteContent">İçerik:</label>
+            <textarea id="noteContent" required></textarea>
+
+            <label for="noteImage">Fotoğraf Yükle:</label>
+            <input type="file" id="noteImage" accept="image/*">
+
+            <button type="submit">Notu Oluştur</button>
+        </form>
+
+        <div id="qrCodeContainer">
+            <h2>QR Kodu:</h2>
+            <div id="qrCode"></div>
+        </div>
+    </div>
+
+    <script src="scripts/app.js"></script>
+</body>
+</html>
