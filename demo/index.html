@@ -285,7 +285,7 @@
                     <!-- Bloklar burada oluşturulacak -->
                 </div>
                 
-                <button type="button" class="secondary-btn" id="addBlockBtn">+ Yeni Ürün Ekle</button>
+                <button type="button" class="secondary-btn" id="addBlockBtn" onclick="addNewBlock()">+ Yeni Ürün Ekle</button>
                 
                 <div class="button-group">
                     <button type="submit" class="primary-btn">Listeyi Oluştur</button>
@@ -569,8 +569,7 @@
             });
         }
         
-        // Sekme değiştirme
-        function switchTab(tabId) {
+function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -580,4 +579,102 @@
             });
             
             document.getElementById(tabId).classList.add('active');
-            document.querySelector(`.tab-button[onclick
+            document.querySelector(`.tab-button[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        }
+        
+        // QR kod tarama fonksiyonları
+        startScanButton.addEventListener('click', function() {
+            if (scannerVideo.hidden) {
+                startQRScanner();
+            } else {
+                stopQRScanner();
+            }
+        });
+        
+        function startQRScanner() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                    .then(function(stream) {
+                        videoStream = stream;
+                        scannerVideo.srcObject = stream;
+                        scannerVideo.hidden = false;
+                        startScanButton.textContent = 'Taramayı Durdur';
+                        scanMessage.style.display = 'none';
+                        scanQRCode();
+                    })
+                    .catch(function(error) {
+                        console.error("Kamera erişimi hatası:", error);
+                        showScanMessage("Kamera erişilemedi. Lütfen kamera izinlerini kontrol ediniz.", false);
+                    });
+            } else {
+                showScanMessage("Bu tarayıcı kamera erişimini desteklemiyor.", false);
+            }
+        }
+        
+        function stopQRScanner() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                scannerVideo.srcObject = null;
+                scannerVideo.hidden = true;
+                startScanButton.textContent = 'Kamerayı Aç';
+            }
+        }
+        
+        function scanQRCode() {
+            if (scannerVideo.hidden) return;
+            
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            if (scannerVideo.videoWidth && scannerVideo.videoHeight) {
+                canvas.width = scannerVideo.videoWidth;
+                canvas.height = scannerVideo.videoHeight;
+                context.drawImage(scannerVideo, 0, 0, canvas.width, canvas.height);
+                
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                
+                if (code) {
+                    processQRData(code.data);
+                    return;
+                }
+            }
+            
+            requestAnimationFrame(scanQRCode);
+        }
+        
+        function processQRData(qrData) {
+            try {
+                const url = new URL(qrData);
+                const params = new URLSearchParams(url.search);
+                const compressedData = params.get('data');
+                
+                if (compressedData) {
+                    try {
+                        const noteData = JSON.parse(LZString.decompressFromEncodedURIComponent(compressedData));
+                        stopQRScanner();
+                        displayNote(noteData);
+                        showScanMessage("Not başarıyla yüklendi!", true);
+                    } catch (e) {
+                        console.error("Not verisi çözülemedi:", e);
+                        showScanMessage("Not verisi çözülemedi. QR kod geçersiz olabilir.", false);
+                        requestAnimationFrame(scanQRCode);
+                    }
+                } else {
+                    showScanMessage("Geçerli bir not QR kodu değil.", false);
+                    requestAnimationFrame(scanQRCode);
+                }
+            } catch (e) {
+                showScanMessage("Bu bir URL değil. Lütfen geçerli bir QR kod tarayınız.", false);
+                requestAnimationFrame(scanQRCode);
+            }
+        }
+        
+        function showScanMessage(message, isSuccess) {
+            scanMessage.textContent = message;
+            scanMessage.className = 'message-box ' + (isSuccess ? 'success' : 'error');
+            scanMessage.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
