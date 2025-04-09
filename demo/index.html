@@ -1,23 +1,631 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Kod Not Uygulaması</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Not Paylaşım Uygulaması</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --accent-color: #7209b7;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #ffd166;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fb;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            color: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .app-description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .tab-container {
+            margin-bottom: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: var(--dark-color);
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            background-color: white;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .tab i {
+            margin-right: 8px;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-top: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Not oluşturma bölümü */
+        .note-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .input-field {
+            padding: 15px;
+            border: 2px solid #e1e5ee;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+        
+        /* Liste kutuları */
+        .list-items-container {
+            margin: 15px 0;
+        }
+        
+        .list-item {
+            display: flex;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .list-item input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e1e5ee;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .list-item input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+        
+        .list-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn-add-item {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 15px;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-add-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .btn-remove-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: #f8d7da;
+            color: #dc3545;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s;
+        }
+        
+        .btn-remove-item:hover {
+            background-color: #f5c2c7;
+        }
+        
+        /* Butonlar */
+        .btn {
+            padding: 15px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e9ecef;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #38b6dc;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #e91175;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(247, 37, 133, 0.3);
+        }
+        
+        /* QR Kod Bölümü */
+        .qr-container {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-top: 30px;
+        }
+        
+        .qr-title {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        
+        .qr-image {
+            margin: 20px auto;
+            padding: 15px;
+            background-color: white;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .note-url {
+            background-color: var(--light-color);
+            padding: 15px;
+            border-radius: 8px;
+            word-break: break-all;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        /* QR Tarama */
+        .scanner-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .scanner-frame {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            border: 3px dashed var(--primary-color);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        .scanner-frame video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .scanner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        
+        .scanner-frame.active {
+            border-color: var(--success-color);
+            box-shadow: 0 0 0 4px rgba(76, 201, 240, 0.3);
+        }
+        
+        .scanner-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .scanner-message.success {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .scanner-message.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        /* Not Görüntüleme */
+        .note-display {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .note-header {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e1e5ee;
+        }
+        
+        .note-body {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+        
+        .note-list-items {
+            list-style-type: none;
+            margin: 15px 0;
+        }
+        
+        .note-list-item {
+            background-color: var(--light-color);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        /* Yükleme İndikatörü */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(67, 97, 238, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Info Box */
+        .info-box {
+            background-color: #e2f0fd;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .info-box strong {
+            color: var(--primary-color);
+        }
+        
+        /* Medya Sorguları */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .tab {
+                padding: 12px 5px;
+                font-size: 0.9rem;
+            }
+            
+            .tab i {
+                margin-right: 5px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Not Oluşturma Uygulaması</h1>
-        <form id="noteForm">
-            <textarea id="noteText" placeholder="Notunuzu buraya yazın..." required></textarea>
-            <input type="file" id="imageUpload" accept="image/*">
-            <button type="submit">Not Oluştur</button>
-        </form>
-        <div id="qrCodeContainer"></div>
+        <header>
+            <h1>Not Paylaşım Uygulaması</h1>
+            <p class="app-description">Notlarınızı oluşturun, QR kod ile hızlıca paylaşın - internet bağlantısı gerektirmez!</p>
+        </header>
+        
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" data-tab="create-tab">
+                    <i class="fas fa-pen"></i> Not Oluştur
+                </div>
+                <div class="tab" data-tab="scan-tab">
+                    <i class="fas fa-qrcode"></i> QR Kod Tara
+                </div>
+            </div>
+            
+            <div id="create-tab" class="tab-content active">
+                <h2>Yeni Not Oluştur</h2>
+                
+                <form id="noteForm" class="note-form">
+                    <div class="form-group">
+                        <label for="noteTitle">Not Başlığı</label>
+                        <input type="text" id="noteTitle" class="input-field" placeholder="Başlık girin" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="noteContent">Not İçeriği</label>
+                        <textarea id="noteContent" class="input-field" rows="5" placeholder="İçerik girin"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Liste Öğeleri</label>
+                        <div id="listItemsContainer" class="list-items-container">
+                            <div class="list-item">
+                                <input type="text" class="list-item-input" placeholder="Liste öğesi girin">
+                                <button type="button" class="btn-remove-item">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="list-controls">
+                            <button type="button" id="addListItem" class="btn-add-item">
+                                <i class="fas fa-plus"></i> Yeni Liste Öğesi Ekle
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Not Oluştur
+                    </button>
+                </form>
+                
+                <div id="loadingIndicator" class="loading">
+                    <div class="spinner"></div>
+                    <p>Not oluşturuluyor...</p>
+                </div>
+                
+                <div id="qrCodeContainer" class="qr-container">
+                    <h3 class="qr-title">Notunuz Başarıyla Oluşturuldu!</h3>
+                    <p>Bu QR kodu taratarak notunuza erişim sağlayabilirsiniz:</p>
+                    
+                    <div id="qrCodeImage" class="qr-image"></div>
+                    
+                    <p>Not Bağlantısı:</p>
+                    <div id="noteUrl" class="note-url"></div>
+                    
+                    <div class="action-buttons">
+                        <button id="copyUrlBtn" class="btn btn-success">
+                            <i class="fas fa-copy"></i> Bağlantıyı Kopyala
+                        </button>
+                        <button id="resetFormBtn" class="btn btn-secondary">
+                            <i class="fas fa-plus"></i> Yeni Not Oluştur
+                        </button>
+                    </div>
+                    
+                    <div class="info-box">
+                        <p><strong>Önemli:</strong> Bu bağlantı veya QR kod, notunuzun tüm içeriğini taşır. 
+                        İstediğiniz kişi ile paylaşabilirsiniz. Herhangi bir sunucu veya internet bağlantısı gerekmez.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="scan-tab" class="tab-content">
+                <h2>QR Kod Tara</h2>
+                
+                <div class="scanner-container">
+                    <button id="startScanButton" class="btn btn-primary">
+                        <i class="fas fa-camera"></i> Kamerayı Aç
+                    </button>
+                    
+                    <div id="scannerFrame" class="scanner-frame">
+                        <video id="scannerVideo" autoplay playsinline hidden></video>
+                        <div class="scanner-overlay">
+                            <i class="fas fa-qrcode fa-3x" style="color: rgba(255, 255, 255, 0.8);"></i>
+                        </div>
+                    </div>
+                    
+                    <div id="scannerMessage" class="scanner-message"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="noteDisplay" class="note-display">
+            <h3 id="displayTitle" class="note-header"></h3>
+            <div id="displayContent" class="note-body"></div>
+            <ul id="displayListItems" class="note-list-items"></ul>
+        </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-    <script src="script.js"></script>
 
-</body>
-</html>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+    <script>
+        // DOM elementlerini seç
+        const tabs = document.querySelectorAll('.tab');
+        const noteForm = document.getElementById('noteForm');
+        const noteTitle = document.getElementById('noteTitle');
+        const noteContent = document.getElementById('noteContent');
+        const listItemsContainer = document.getElementById('listItemsContainer');
+        const addListItemBtn = document.getElementById('addListItem');
+        const qrCodeContainer = document.getElementById('qrCodeContainer');
+        const qrCodeImage = document.getElementById('qrCodeImage');
+        const noteUrlElement = document.getElementById('noteUrl');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const copyUrlBtn = document.getElementById('copyUrlBtn');
+        const resetFormBtn = document.getElementById('resetFormBtn');
+        const startScanButton = document.getElementById('startScanButton');
+        const scannerVideo = document.getElementById('scannerVideo');
+        const scannerFrame = document.getElementById('scannerFrame');
+        const scannerMessage = document.getElementById('scannerMessage');
+        const noteDisplay = document.getElementById('noteDisplay');
+        const displayTitle = document.getElementById('displayTitle');
+        const displayContent = document.getElementById('displayContent');
+        const displayListItems = document.getElementById('displayListItems');
+        
+        // Sekme değiştirme işlevi
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Aktif sekmeleri kaldır
+                document.querySelectorAll('.
