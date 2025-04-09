@@ -1,23 +1,231 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-    <meta charset="UTF-8">
+         <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Kod Not Uygulaması</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Not Paylaşım Uygulaması</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #121212;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            color: #bb86fc;
+            margin-bottom: 25px;
+        }
+        .container {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .blocks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .note-block {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        input, textarea {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background-color: #2d2d2d;
+            color: white;
+            width: 100%;
+        }
+        button {
+            padding: 10px 15px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .primary-btn {
+            background-color: #bb86fc;
+            color: #121212;
+        }
+        .secondary-btn {
+            background-color: #03dac6;
+            color: #121212;
+        }
+        .danger-btn {
+            background-color: #cf6679;
+            color: #121212;
+        }
+    </style>
 </head>
 <body>
+    <h1>Not Paylaşım Uygulaması</h1>
+    
     <div class="container">
-        <h1>Not Oluşturma Uygulaması</h1>
+        <h2>Yeni Liste Oluştur</h2>
         <form id="noteForm">
-            <textarea id="noteText" placeholder="Notunuzu buraya yazın..." required></textarea>
-            <input type="file" id="imageUpload" accept="image/*">
-            <button type="submit">Not Oluştur</button>
+            <input type="text" id="noteTitle" placeholder="Liste Başlığı" required>
+            
+            <div class="blocks-container" id="blocksContainer">
+                <!-- Ürün blokları buraya eklenecek -->
+            </div>
+            
+            <!-- DÜZGÜN ÇALIŞAN EKLEME BUTONU -->
+            <button type="button" id="addBlockBtn" class="secondary-btn">+ Yeni Ürün Ekle</button>
+            
+            <div style="margin-top: 20px;">
+                <button type="submit" class="primary-btn">Listeyi Kaydet</button>
+            </div>
         </form>
-        <div id="qrCodeContainer"></div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-    <script src="script.js"></script>
 
+    <script>
+        // DEĞİŞKENLER
+        const blocksContainer = document.getElementById('blocksContainer');
+        const addBlockBtn = document.getElementById('addBlockBtn');
+        let blockCount = 0;
+
+        // SAYFA YÜKLENDİĞİNDE
+        document.addEventListener('DOMContentLoaded', () => {
+            // İlk bloğu ekle
+            addNewBlock();
+            
+            // YENİ ÜRÜN EKLEME BUTONU (KESİN ÇALIŞAN)
+            addBlockBtn.addEventListener('click', addNewBlock);
+            
+            // Form gönderimi
+            document.getElementById('noteForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                alert('Liste kaydedildi!');
+            });
+        });
+
+        // YENİ ÜRÜN EKLEME FONKSİYONU (GÜNCELLENMİŞ)
+        function addNewBlock() {
+            blockCount++;
+            const blockDiv = document.createElement('div');
+            blockDiv.className = 'note-block';
+            blockDiv.innerHTML = `
+                <input type="text" class="block-content" placeholder="Ürün adı" required>
+                <input type="text" class="quantity-input" placeholder="Miktar">
+                <button type="button" class="danger-btn" onclick="this.parentNode.remove()">Sil</button>
+            `;
+            blocksContainer.appendChild(blockDiv);
+        }
+                // 1. SUPABASE AYARLARI (Kendi bilgilerinizle değiştirin)
+                const SUPABASE_URL = 'https://zqfcnabvqnvgxkfiware.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxZmNuYWJ2cW52Z3hrZml3YXJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQyMjkwNTksImV4cCI6MjA1OTgwNTA1OX0.8LQEopuC6CXbejonf3IPS2m-2VvHGpXCsec61gyK7sU';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 2. NOT KAYDETME FONKSİYONU (Supabase entegreli)
+        async function saveNoteToDatabase(noteData) {
+            try {
+                const { data, error } = await supabase
+                    .from('notes')
+                    .insert([noteData])
+                    .select();
+                
+                if (error) throw error;
+                return data[0].id; // Oluşturulan notun ID'si
+            } catch (error) {
+                console.error("Not kaydetme hatası:", error);
+                throw error;
+            }
+        }
+
+        // 3. GÜNCELLENMİŞ NOT OLUŞTURMA FONKSİYONU
+        async function createNoteWithBlocks() {
+            const title = document.getElementById('noteTitle').value.trim();
+            const blocks = [];
+            
+            // Tüm bloklardaki verileri topla
+            document.querySelectorAll('.note-block').forEach(block => {
+                const item = block.querySelector('.block-content').value.trim();
+                const quantity = block.querySelector('.quantity-input').value.trim();
+                if (item) blocks.push({ item, quantity });
+            });
+            
+            if (!title || blocks.length === 0) {
+                alert('Lütfen başlık ve en az bir ürün girin!');
+                return;
+            }
+            
+            try {
+                // Veritabanına kaydet
+                const noteId = await saveNoteToDatabase({
+                    title,
+                    blocks,
+                    created_at: new Date().toISOString()
+                });
+                
+                // QR kod oluştur
+                generateShareLink(noteId);
+                
+            } catch (error) {
+                alert('Hata: ' + error.message);
+            }
+        }
+
+        // 4. PAYLAŞIM LİNKİ OLUŞTURMA
+        function generateShareLink(noteId) {
+            const noteUrl = `${window.location.href}?noteId=${noteId}`;
+            
+            // QR kod oluştur
+            document.getElementById('qrCodeImage').innerHTML = '';
+            new QRCode(document.getElementById('qrCodeImage'), {
+                text: noteUrl,
+                width: 200,
+                height: 200
+            });
+            
+            document.getElementById('noteUrl').textContent = noteUrl;
+            document.getElementById('qrCodeContainer').style.display = 'block';
+        }
+
+        // 5. NOT YÜKLEME FONKSİYONU
+        async function loadNote(noteId) {
+            try {
+                const { data, error } = await supabase
+                    .from('notes')
+                    .select('*')
+                    .eq('id', noteId)
+                    .single();
+                
+                if (error) throw error;
+                
+                // Notu göster
+                displayNote(data);
+                
+            } catch (error) {
+                console.error("Not yükleme hatası:", error);
+            }
+        }
+
+        // 6. SAYFA YÜKLENDİĞİNDE
+        document.addEventListener('DOMContentLoaded', async () => {
+            // URL'den not ID'sini kontrol et
+            const urlParams = new URLSearchParams(window.location.search);
+            const noteId = urlParams.get('noteId');
+            
+            if (noteId) {
+                await loadNote(noteId);
+            }
+            
+            // Form submit eventi
+            document.getElementById('noteForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await createNoteWithBlocks();
+            });
+        });
+    </script>
 </body>
 </html>
