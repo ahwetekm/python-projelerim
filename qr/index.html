@@ -70,14 +70,6 @@
             white-space: pre-wrap;
         }
         
-        .note-image {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 4px;
-            margin-top: 15px;
-            display: block;
-        }
-        
         #qrCodeContainer {
             display: flex;
             flex-direction: column;
@@ -229,7 +221,6 @@
             <form id="noteForm">
                 <input type="text" id="noteTitle" placeholder="Not Başlığı" required>
                 <textarea id="noteContent" placeholder="Not İçeriği" rows="5" required></textarea>
-                <input type="file" id="noteImage" accept="image/*">
                 <button type="submit">Not Oluştur</button>
             </form>
             
@@ -272,7 +263,6 @@
             <h2 class="section-title">Not Detayları</h2>
             <div class="note-title" id="displayTitle"></div>
             <div class="note-content" id="displayContent"></div>
-            <img class="note-image" id="displayImage" style="display: none;">
         </div>
     </div>
 
@@ -284,7 +274,6 @@
         const noteForm = document.getElementById('noteForm');
         const noteTitle = document.getElementById('noteTitle');
         const noteContent = document.getElementById('noteContent');
-        const noteImage = document.getElementById('noteImage');
         const qrCodeContainer = document.getElementById('qrCodeContainer');
         const qrCodeImage = document.getElementById('qrCodeImage');
         const noteUrlElement = document.getElementById('noteUrl');
@@ -297,7 +286,6 @@
         const noteDisplay = document.getElementById('noteDisplay');
         const displayTitle = document.getElementById('displayTitle');
         const displayContent = document.getElementById('displayContent');
-        const displayImage = document.getElementById('displayImage');
         
         // Sekme değiştirme
         function switchTab(tabId) {
@@ -328,24 +316,15 @@
             loadingIndicator.style.display = 'block';
             noteForm.style.display = 'none';
             
-            // Resim varsa base64 formatına çevir
-            if (noteImage.files.length > 0) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    createNote(title, content, event.target.result);
-                };
-                reader.readAsDataURL(noteImage.files[0]);
-            } else {
-                createNote(title, content, null);
-            }
+            // Not oluştur
+            createNote(title, content);
         });
         
-        function createNote(title, content, imageData) {
+        function createNote(title, content) {
             // Not nesnesini oluştur
             const note = {
                 title: title,
                 content: content,
-                image: imageData,
                 createdAt: new Date().toISOString()
             };
             
@@ -393,14 +372,6 @@
         function displayNote(note) {
             displayTitle.textContent = note.title;
             displayContent.textContent = note.content;
-            
-            if (note.image) {
-                displayImage.src = note.image;
-                displayImage.style.display = 'block';
-            } else {
-                displayImage.style.display = 'none';
-            }
-            
             noteDisplay.style.display = 'block';
         }
         
