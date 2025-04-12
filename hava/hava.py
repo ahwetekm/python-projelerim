@@ -5,6 +5,8 @@ gelen = requests.get(url)
 veri = gelen.json()
 ist_durum = veri['current']['condition']['text']
 ist_derece = veri['current']['temp_c']
+if ist_durum == "Partly cloudy":
+  ist_durum = "Parçalı Bulutlu"
 print("Istanbul Hava Durumu")
 print("Derece: ", ist_derece)
 print("Durum: ", ist_durum)
