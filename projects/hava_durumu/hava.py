@@ -9,6 +9,8 @@ if ist_durum == "Partly cloudy":
   ist_durum = "Parçalı Bulutlu"
 elif ist_durum == "Clear":
   ist_durum = "Açık"
+elif ist_durum == "Sunny":
+  ist_durum = "Güneşli"
 print("Istanbul için hava durumu (genel)")
 print("Derece: ", ist_derece)
 print("Durum: ", ist_durum)
