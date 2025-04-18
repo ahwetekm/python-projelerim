@@ -11,9 +11,10 @@ tl = veri['data'] ['TRY']
 eur = veri['data'] ['EUR']
 usd = 1
 
-#kullanıcıya hangi döviz üzerinden işlem yapmak istediğini soralım.
+#Döngü oluşturalım. Bu sayede sürekli tekrar eder.
 while True:
 	islem = input("Yapmak istediğiniz işlemi seçiniz 1 (çevirme) 2 (çıkış): ")
+#kullanıcı "1"i seçerse dönüştürmek istediği kuru sorarız
 	if islem == "1":
 		kur1 = input("Merhaba, gerçek zamanlı kur çeviriciye hoş geldiniz. Bana elinizde hangi döviz bulunduğunu söyler misiniz? (tl, eur, usd): ")
 		bakiye = int(input("Peki bu elinizdeki dövizin miktarını girer misiniz?: "))
@@ -42,7 +43,7 @@ while True:
 			print("Kur çevrildi. Sizin " + str(round(net, 2)) + " Euro'nuz var.")
 		else:
 			print("Böyle bir kur halihazırda eklenmemiş veya bulunmayabilir. Lütfen bulunduğundan eminseniz bizimle iletişime geçin. Emin değilseniz buyrun tekrar deneyin. ")
-
+#kullanıcı "2"yi seçerse çıkışını sağlarız.
 	elif islem == "2":
 		print("Çıkışınız sağlandı. Güle Güle :)")
 		break
