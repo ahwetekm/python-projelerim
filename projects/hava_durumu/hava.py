@@ -5,7 +5,7 @@ import requests
 base_url = "http://api.weatherapi.com/v1/forecast.json?key=685e2c31dd0c434e92d144440251004&q="
 #Döngü oluşturdum
 while True:
-	islem = input("Yapmak istediğiniz işlemi seçiniz 1[Hava Durumu] 2[çıkış]")
+	islem = input("Yapmak istediğiniz işlemi seçiniz 1[Hava Durumu] 2[çıkış]: ")
 #"1"i seçerlerse api ile veri çekip hava durumu işlemlerini gerçekleştirelim
 	if islem == "1":
 		sehir = input("Şehir giriniz (Önek: New_York, Istanbul, Ankara, Çankırı, Tokat): ")
